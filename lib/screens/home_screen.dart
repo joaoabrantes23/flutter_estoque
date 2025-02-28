@@ -10,7 +10,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DBHelper dbHelper = DBHelper();
-  List<ProdutoModel> produtos = [];
+  List<ProdutoModel> produtosFiltrados = [];
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -19,9 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void carregarProdutos() async {
-    produtos = await dbHelper.listarProdutos();
-    setState(() {});
+    List<ProdutoModel> produtos = await dbHelper.listarProdutos();
+    setState(() {
+      produtosFiltrados = produtos;
+    });
   }
+
 
   void mostrarDialogo({ProdutoModel? produto}) {
     TextEditingController nomeController = TextEditingController(text: produto?.nome ?? '');
@@ -75,7 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     carregarProdutos();
   }
 
-  List<ProdutoModel> produtosFiltrados = [];
   
   void filtrarProdutos(String query) async {
   List<ProdutoModel> produtosPesquisados = await dbHelper.pesquisarProdutos(query);
@@ -88,27 +91,28 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Gerenciamento de Estoque')),
+      appBar: AppBar(
+        title: TextField(
+          controller: searchController,
+          decoration: InputDecoration(
+            hintText: "Pesquisar produto...",
+            border: InputBorder.none,
+            icon: Icon(Icons.search, color: Colors.white),
+          ),
+          style: TextStyle(color: Colors.white, fontSize: 18),
+          onChanged: filtrarProdutos,
+        ),
+        backgroundColor: Colors.blue,
+      ),
       body: ListView.builder(
-        itemCount: produtos.length,
+        itemCount: produtosFiltrados.length,
         itemBuilder: (_, index) {
-          ProdutoModel produto = produtos[index];
+          ProdutoModel produto = produtosFiltrados[index];
           return ListTile(
             title: Text(produto.nome),
             subtitle: Text('Qtd: ${produto.quantidade} | R\$ ${produto.preco.toStringAsFixed(2)}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(icon: Icon(Icons.edit), onPressed: () => mostrarDialogo(produto: produto)),
-                IconButton(icon: Icon(Icons.delete), onPressed: () => deletarProduto(produto.id!)),
-              ],
-            ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => mostrarDialogo(),
       ),
     );
   }
