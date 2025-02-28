@@ -61,4 +61,22 @@ class DBHelper {
     final db = await database;
     return await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<List<ProdutoModel>> pesquisarProdutos(String query) async {
+    final db = await database;
+    List<Map<String, dynamic>> resultados = await db.query(
+      'produtos',
+      where: 'nome LIKE ?',
+      whereArgs: ['%$query%'], // Busca produtos que contenham o texto digitado
+    );
+    
+    return List.generate(resultados.length, (i) {
+      return ProdutoModel(
+        id: resultados[i]['id'],
+        nome: resultados[i]['nome'],
+        quantidade: resultados[i]['quantidade'],
+        preco: resultados[i]['preco'],
+      );
+    });
+  }
 }

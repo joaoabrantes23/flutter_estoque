@@ -75,6 +75,16 @@ class _HomeScreenState extends State<HomeScreen> {
     carregarProdutos();
   }
 
+  List<ProdutoModel> produtosFiltrados = [];
+  
+  void filtrarProdutos(String query) async {
+  List<ProdutoModel> produtosPesquisados = await dbHelper.pesquisarProdutos(query);
+  setState(() {
+    produtosFiltrados = produtosPesquisados;
+  });
+}
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
